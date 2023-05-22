@@ -1,7 +1,7 @@
 "use strict";
 
 ////////////////////////////////////////
-//// SELECTING ELEMENTS
+//// STASHING ELEMENTS
 const player0EL = document.querySelector(".player--0");
 const player1EL = document.querySelector(".player--1");
 const score0EL = document.getElementById("score--0");
@@ -13,69 +13,72 @@ const btnNew = document.querySelector(".btn--new");
 const btnRoll = document.querySelector(".btn--roll");
 const btnHold = document.querySelector(".btn--hold");
 
-// starting conditions
+////////////////////////////////////////
+//// STARTING CONDITIONS
 let scores, currentScore, activePlayer, gameIsOn; // declared so they can be accessed outside of the function (globally)
 
-// functions
+////////////////////////////////////////
+//// FUNCTIONS
+// GAME STARTING CONDITIONS
 const init = function () {
-  // starting conditions
-  scores = [0, 0]; // total scores
-  currentScore = 0; // current scores per round
+  scores = [0, 0]; // total scores for each player
+  currentScore = 0; // current score of the active player (per round)
   activePlayer = 0; // 0 = player 1, 1 = player 2
   gameIsOn = true; // game is on or off
 
-  score0EL.textContent = 0;
+  score0EL.textContent = 0; // change total score html element to 0
   score1EL.textContent = 0;
-  current0EL.textContent = 0;
+  current0EL.textContent = 0; // change current score html element to 0
   current1EL.textContent = 0;
 
   diceEL.classList.add("hidden"); // hide dice until game starts
-  player0EL.classList.remove("player--winner");
-  player1EL.classList.remove("player--winner");
-  player0EL.classList.add("player--active");
-  player1EL.classList.remove("player--active");
+  player0EL.classList.remove("player--winner"); // remove winner class
+  player1EL.classList.remove("player--winner"); // remove winner class
+  player0EL.classList.add("player--active"); // add active class to player 0
+  player1EL.classList.remove("player--active"); // remove active class from player 1
 };
 
-init();
+init(); // call init function on page load
 
+// SWITCH THE ACTIVE PLAYER
 const switchPlayer = function () {
-  //// OLD ACTIVE PLAYER CHANGES
-  // reset current score html element to 0
+  // RESET CURRENT SCORE HTML ELEMENT FOR PREVIOUS PLAYER
   document.getElementById(`current--${activePlayer}`).textContent = 0;
 
-  // change highlight to show active player
+  // CHANGE HIGHLIGHT TO DISPLAY OVER THE ACTIVE PLAYER
   player0EL.classList.toggle("player--active"); // remove if the class is already there and if not then add it
   player1EL.classList.toggle("player--active");
 
-  //// CURRENT ACTIVE PLAYER CHANGES
-  // switch active player
+  // SWITCH THE ACTIVE PLAYER
   activePlayer = activePlayer === 0 ? 1 : 0;
 
-  // reset current score to 0
+  // RESET CURRENT SCORE OF THE ACTIVE PLAYER
   currentScore = 0;
 };
 
 ////////////////////////////////////////
 //// ROLLING DICE FUNCTIONALITY
 btnRoll.addEventListener("click", function (event) {
+  //// ONLY RUN THIS CODE IF "gameIsOn" IS TRUE
   if (gameIsOn) {
-    // generate random dice roll
+    // GENERATE RANDOM DICE ROLL BETWEEN 1 AND 6
     let dice = Math.trunc(Math.random() * 6) + 1;
 
-    // display dice
-    diceEL.classList.remove("hidden");
-    diceEL.src = `dice-${dice}.png`;
+    // DISPLAY THE DICE
+    diceEL.classList.remove("hidden"); // remove hidden class to allow dice to be displayed
+    diceEL.src = `dice-${dice}.png`; // figure out which dice image to display
     console.warn(`Dice Roll: ${dice}`); // DEBUGGING
 
-    // check for rolled 1: if true
+    // CHECK THE DICE ROLL RESULT
     if (dice !== 1) {
-      // add dice to current score
+      // ADD DICE ROLL TO CURRENT SCORE
       currentScore += dice;
       document.getElementById(`current--${activePlayer}`).textContent =
-        currentScore;
+        currentScore; // update current score html element
 
       console.warn(`Current Score: ${currentScore}`); // DEBUGGING
     } else {
+      // IF DICE ROLL IS ONE THEN SWITCH THE ACTIVE PLAYER
       switchPlayer(); // switch to next player
 
       console.warn(`New Actice Player:${activePlayer}`); // DEBUGGING
@@ -84,32 +87,39 @@ btnRoll.addEventListener("click", function (event) {
 });
 
 ////////////////////////////////////////
-//// HOLD CURRENT SCORE AND CHECK FOR WINNER
+//// STORE CURRENT SCORE AND CHECK FOR WINNER
 btnHold.addEventListener("click", function (event) {
+  //// ONLY RUN THIS CODE IF "gameIsOn" IS TRUE
   if (gameIsOn) {
-    // add current score to active player's total score
+    // ADD CURRENT SCORE TO ACTIVE PLAYERS TOTAL SCORE
     scores[activePlayer] += currentScore;
     document.getElementById(`score--${activePlayer}`).textContent =
-      scores[activePlayer];
+      scores[activePlayer]; // update total score html element
 
-    // check if score is greater >= 100
-    // finish game
+    ////////////////////////////////////////
+    //// CHECK IF THE GAME IS OVER
     if (scores[activePlayer] >= 100) {
-      gameIsOn = false; // stop game
+      // TURN GAME OFF AND REMOVE DICE FROM SCREEN
+      gameIsOn = false; // stop game (DISABLE EVENT LISTENERS)
       diceEL.classList.add("hidden"); // remove dice from screen
-      console.log(`Player Wins!`);
+      console.log(`Player Wins!`); // DEBUGGING
+
+      // ASSIGN THE WINNER CLASS TO THE WINNING PLAYER
       document
         .querySelector(`.player--${activePlayer}`)
         .classList.add("player--winner");
 
+      // REMOVE ACTIVE PLAYER CLASS FROM THE WINNING PLAYER
       document
         .querySelector(`.player--${activePlayer}`)
         .classList.remove("active--player");
-      // if not - switch to next player
     } else {
+      // IF THE GAME IS NOT OVER THEN SWITCH THE ACTIVE PLAYER WHEN THE HOLD BUTTON IS CLICKED
       switchPlayer();
     }
   }
 });
 
-btnNew.addEventListener("click", init);
+////////////////////////////////////////
+//// RESTART THE GAME
+btnNew.addEventListener("click", init); // reset initial variables and all changed html elements
